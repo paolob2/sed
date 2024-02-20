@@ -1,6 +1,6 @@
 import abc
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from lib.environment.environment import Environment
 from lib.vector import Vector
@@ -17,7 +17,7 @@ class OneDEnvironment(Environment):
 
     def pull(self, i: int) -> Vector:
         return Vector(np.array([self.pull_scalar(i)]))
-        
+
 
 class GaussianOneDEnvironment(OneDEnvironment):
     def __init__(self, mu: List[float], variance_range: Tuple[float, float]):
@@ -50,7 +50,7 @@ class PairedOneDEnvironment(OneDEnvironment):
         n = self.base_environment.n
         u, v = self.to_pair(i, n)
         return self.base_environment.pull_scalar(u) - self.base_environment.pull_scalar(v)
-    
+
     def to_pair(self, i: int, n: int) -> Tuple[int, int]:
         u = i // (n - 1)
         v = i % (n - 1)

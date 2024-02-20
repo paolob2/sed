@@ -5,7 +5,12 @@ from lib.agent.agent import OneDAgent
 from lib.environment.oned_environment import OneDEnvironment
 from lib.utils import lil_delta, U, argmax
 
+
 class Jamieson2014(OneDAgent):
+    """
+    Implementation of the LIL-LUCB algorithm proposed in (Jamieson et al., 2014)
+    """
+
     def __init__(self, confidence: float, epsilon: float):
         super().__init__(confidence)
         self.epsilon = epsilon
@@ -13,7 +18,7 @@ class Jamieson2014(OneDAgent):
 
     def best_arm(self, environment: OneDEnvironment) -> Tuple[Optional[int], List[List[int]]]:
         n = environment.n
-        sigma_squared = environment.sigma ** 2
+        sigma_squared = environment.sigma**2
         means = [environment.pull_scalar(i) for i in range(n)]
         pulls = [[i] for i in range(n)]
         pull_count = [1 for _ in range(n)]

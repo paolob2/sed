@@ -1,7 +1,5 @@
 import abc
-from math import inf, log, sqrt
-
-from lib.utils import argmax, U, lil_delta
+from math import log, sqrt
 
 
 class Bound(metaclass=abc.ABCMeta):
@@ -44,30 +42,31 @@ class Vector_Bound(Bound):
 
 
 class SubG_Bound(Vector_Bound):
-    def __init__(self, delta: float, lip_k: float):
+    def __init__(self, delta: float, lip_k: float = 1):
         self.delta = delta
         self.lip_k = lip_k
 
     def compute(self, n: int, m: int, t: int, p: int, R: float) -> float:
         return R * sqrt(2 * m * log(4 * n * m * t * t / self.delta) / p)
-    
+
     def compute_vector(self, n: int, m: int, t: int, pi: int, pj: int, R: float) -> float:
         return sqrt(m) * self.lip_k * (self.compute(n, m, t, pi, R) + self.compute(n, m, t, pj, R))
-    
+
     def name(self) -> str:
         return "SubGaussian bound"
 
 
 class SubExp_Bound(Vector_Bound):
-    def __init__(self, delta: float, lip_k: float):
+    def __init__(self, delta: float, lip_k: float = 1):
         self.delta = delta
         self.lip_k = lip_k
 
     def compute(self, n: int, m: int, t: int, p: int, R: float) -> float:
-        return sqrt(2 * R * R * max(m, log(4 * n * t * t / self.delta)) / p)
-    
+        # the constants here have been slightly corrected since the paper experiments
+        return sqrt(16 * R * R * max(m, log(2 * n * t * t / self.delta)) / p)
+
     def compute_vector(self, n: int, m: int, t: int, pi: int, pj: int, R: float) -> float:
         return self.lip_k * (self.compute(n, m, t, pi, R) + self.compute(n, m, t, pj, R))
-    
+
     def name(self) -> str:
         return "SubExponential bound"

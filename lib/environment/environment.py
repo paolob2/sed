@@ -1,6 +1,4 @@
 import abc
-import numpy as np
-from typing import Tuple
 
 from lib.vector import Vector
 

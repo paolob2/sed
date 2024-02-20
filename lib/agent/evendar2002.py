@@ -1,10 +1,15 @@
-from math import inf, log, sqrt
+from math import log, sqrt
 from typing import List, Optional, Tuple
 
 from lib.agent.agent import OneDAgent
 from lib.environment.oned_environment import OneDEnvironment
 
+
 class EvenDar2002(OneDAgent):
+    """
+    Implementation of the Successive Elimination algorithm proposed in (Even-Dar et al., 2002)
+    """
+
     def best_arm(self, environment: OneDEnvironment) -> Tuple[Optional[int], List[List[int]]]:
         n = environment.n
         sigma = environment.sigma
@@ -40,4 +45,3 @@ class EvenDar2002(OneDAgent):
 
     def name(self) -> str:
         return "Evendar2002"
-

@@ -13,7 +13,7 @@ class Agent(metaclass=abc.ABCMeta):
     def best_arm(self, environment: Environment) -> Tuple[Optional[Tuple[int, int]], List[List[int]]]:
         """
         Returns:
-            (int, int): indices of the best pair
+            (int, int): indices of the best pair or None if the agent failed
             list[list[int]]: list of arms pulled during each epoch
         """
         pass
@@ -35,7 +35,7 @@ class OneDAgent(Agent):
     def best_arm(self, environment: OneDEnvironment) -> Tuple[Optional[int], List[List[int]]]:
         """
         Returns:
-            (int): index of the best arm
+            (int): index of the best arm or None if the agent failed
             list[list[int]]: list of arms pulled during each round
         """
         pass

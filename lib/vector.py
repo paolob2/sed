@@ -7,7 +7,7 @@ def random_image(shape: Tuple[int, int]) -> np.ndarray:
     return np.random.uniform(0, 1, shape)
 
 
-class Vector():
+class Vector:
     L1_score = lambda x: np.sum(np.abs(x))
     L2_score = lambda x: np.linalg.norm(x)
     score_function = L2_score
@@ -15,17 +15,21 @@ class Vector():
     def __init__(self, data: np.ndarray):
         self.data = data
 
-    def assert_compatible(self, other: 'Vector'):
+    def assert_compatible(self, other: "Vector"):
         if self.data.shape != other.data.shape:
-            raise ValueError("non matching Vector shapes: ",
-                self.data.shape, " and ", other.data.shape)
+            raise ValueError(
+                "non matching Vector shapes: ",
+                self.data.shape,
+                " and ",
+                other.data.shape,
+            )
 
-    def diff(self, other: 'Vector') -> float:
+    def diff(self, other: "Vector") -> float:
         self.assert_compatible(other)
         return Vector.score_function(np.reshape(self.data - other.data, -1))
-    
 
-class VectorSamples():
+
+class VectorSamples:
     def __init__(self, first_sample: Vector, keep_samples: bool = False):
         self.n_samples = 1
         self.avg = first_sample
@@ -43,7 +47,7 @@ class VectorSamples():
 
 class Image(Vector):
     def __init__(self, shape: Tuple[int, int], pixels: Optional[np.ndarray] = None):
-        if shape[0] == 0 or shape[1] == 0:
+        if shape[0] <= 0 or shape[1] <= 0:
             raise ValueError("invalid shape ", shape)
         if pixels is None:
             pixels = random_image(shape)

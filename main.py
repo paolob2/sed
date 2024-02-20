@@ -1,9 +1,7 @@
 from argparse import ArgumentParser
 import csv
-from datetime import date
 import numpy as np
-import os
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, List
 
 from lib.agent.agent import Agent, OneDAgent
 from lib.agent.agent_wrapper import AgentWrapper, PairedAgentWrapper, MaxMinAgentWrapper
@@ -12,7 +10,10 @@ from lib.agent.jamieson2014 import Jamieson2014
 from lib.agent.SED import SED
 from lib.agent.bound import SubExp_Bound
 from lib.environment.environment import Environment
-from lib.environment.oned_environment import GaussianOneDEnvironment, OneDEnvironment, PairedOneDEnvironment, PairedVectorEnvironment
+from lib.environment.oned_environment import (
+    GaussianOneDEnvironment,
+    OneDEnvironment,
+)
 from lib.environment.generator import Generator, ImageGenerator
 from lib.utils import get_confidence_range, compute_env_info
 from lib.vector import Image
@@ -39,7 +40,8 @@ def build_random_nd_environment(args) -> Environment:
 
 
 def build_1d_environment(args) -> OneDEnvironment:
-    n  = args.number_of_arms
+    # the means mu will always be sorted descendingly for convenience
+    n = args.number_of_arms
     if args.generator == equalIntervals:
         mu = [(n - i) / n for i in range(n)]
     elif args.generator == concentratedMid:
@@ -54,13 +56,14 @@ def build_1d_environment(args) -> OneDEnvironment:
         mu[0] = 1
         mu[-1] = 0
     elif args.generator == random:
+        # TODO delta_min not currently checked
         mu = (np.random.rand(n)).tolist()
         mu.sort(reverse=True)
         print(mu)
     else:
         raise ValueError("unspecified environment")
     return GaussianOneDEnvironment(mu, (args.min_variance, args.max_variance))
-    
+
 
 def build_nd_environment(args) -> Generator:
     if args.generator == random:
@@ -85,8 +88,8 @@ def main(args):
         lambda delta: EvenDar2002(delta),
     ]
     vector_algorithms: List[Callable[[float], Agent]] = [
-        lambda delta: SED(SubExp_Bound(delta, 1)),
-        lambda delta: SED(SubExp_Bound(delta, 1), None, False),
+        lambda delta: SED(SubExp_Bound(delta)),
+        lambda delta: SED(SubExp_Bound(delta), None, False),
     ]
 
     agent_wrappers = []
@@ -100,16 +103,16 @@ def main(args):
             agent_wrappers.append(MaxMinAgentWrapper(algorithm(args.delta / 2)))
 
     for round in range(args.rounds):
-        print(round+1)
+        print(round + 1)
         if args.image_size == 1:
             env = build_1d_environment(args)
         else:
             env = build_nd_environment(args)
-        
+
         for agent in agent_wrappers:
             agent.run(env)
 
-    with open(args.output, 'w') as f:
+    with open(args.output, "w") as f:
         writer = csv.writer(f)
         header = [
             "Name",
@@ -120,7 +123,7 @@ def main(args):
             "90% confidence for avg_rounds",
             "Avg number of pulls",
             "Var number of pulls",
-            "90% confidence for avg_pulls"
+            "90% confidence for avg_pulls",
         ]
         writer.writerow(header)
         for agent in agent_wrappers:
@@ -134,25 +137,29 @@ def main(args):
                     get_confidence_range(np.var(stats.rounds_count), args.rounds, 0.9),
                     np.mean(stats.pulls_count),
                     np.var(stats.pulls_count),
-                    get_confidence_range(np.var(stats.pulls_count), args.rounds, 0.9)
+                    get_confidence_range(np.var(stats.pulls_count), args.rounds, 0.9),
                 ]
                 writer.writerow(row)
 
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser()
-    arg_parser.add_argument('--generator', choices=[equalIntervals, concentratedMid, concentratedMinMax, random], default=random)
-    arg_parser.add_argument('-n', '--number-of-arms', type=int, required=True)
-    arg_parser.add_argument('-s', '--image-size', type=int, required=True)
-    arg_parser.add_argument('--delta-min', type=float, default=0.1)
-    arg_parser.add_argument('--score-fun', choices=[l1, l2], default=l2)
-    arg_parser.add_argument('--min-variance', type=float, default=None)
-    arg_parser.add_argument('--max-variance', type=float, default=1)
-    arg_parser.add_argument('--delta', type=float, default=0.1)
-    arg_parser.add_argument('--lil-epsilon', type=float, default=0.01)
-    arg_parser.add_argument('--max-iterations', type=int, default=1e6)
-    arg_parser.add_argument('--rounds', type=int, default=10)
-    arg_parser.add_argument('--output', type=str, default='result.csv')
+    arg_parser.add_argument(
+        "--generator",
+        choices=[equalIntervals, concentratedMid, concentratedMinMax, random],
+        default=random,
+    )
+    arg_parser.add_argument("-n", "--number-of-arms", type=int, required=True)
+    arg_parser.add_argument("-s", "--image-size", type=int, required=True)
+    arg_parser.add_argument("--delta-min", type=float, default=0.1)
+    arg_parser.add_argument("--score-fun", choices=[l1, l2], default=l2)
+    arg_parser.add_argument("--min-variance", type=float, default=None)
+    arg_parser.add_argument("--max-variance", type=float, default=1)
+    arg_parser.add_argument("--delta", type=float, default=0.1)
+    arg_parser.add_argument("--lil-epsilon", type=float, default=0.01)
+    arg_parser.add_argument("--max-iterations", type=int, default=1e6)
+    arg_parser.add_argument("--rounds", type=int, default=10)
+    arg_parser.add_argument("--output", type=str, default="result.csv")
     args = arg_parser.parse_args()
     print(args)
     main(args)
